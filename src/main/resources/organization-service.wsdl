@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:tns="http://soa.lab4.organization"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             targetNamespace="http://soa.lab4.organization"
+             name="OrganizationService">
+
+    <types>
+        <xsd:schema>
+            <xsd:import namespace="http://soa.lab4.organization" schemaLocation="organization.xsd"/>
+        </xsd:schema>
+    </types>
+
+    <!-- Messages -->
+    <message name="GetOrganizationRequest">
+        <part name="id" type="xsd:long"/>
+    </message>
+
+    <message name="GetOrganizationResponse">
+        <part name="organization" element="tns:Organization"/>
+    </message>
+
+    <message name="CreateOrganizationRequest">
+        <part name="organization" element="tns:Organization"/>
+    </message>
+
+    <message name="CreateOrganizationResponse">
+        <part name="organization" element="tns:Organization"/>
+    </message>
+
+    <message name="UpdateOrganizationRequest">
+        <part name="id" type="xsd:long"/>
+        <part name="updatedOrganization" element="tns:Organization"/>
+    </message>
+
+    <message name="UpdateOrganizationResponse">
+        <part name="organization" element="tns:Organization"/>
+    </message>
+
+    <message name="DeleteOrganizationRequest">
+        <part name="id" type="xsd:long"/>
+    </message>
+
+    <message name="DeleteOrganizationResponse">
+        <part name="success" type="xsd:boolean"/>
+    </message>
+
+    <message name="GetFilteredOrganizationsRequest">
+        <part name="creationDate" type="xsd:string"/>
+        <part name="annualTurnover" type="xsd:int"/>
+        <part name="sort" type="xsd:string"/>
+    </message>
+
+    <message name="GetFilteredOrganizationsResponse">
+        <part name="organizations" maxOccurs="unbounded" element="tns:Organization"/>
+    </message>
+
+    <message name="CountByEmployeesCountRequest">
+        <part name="count" type="xsd:long"/>
+    </message>
+
+    <message name="CountByEmployeesCountResponse">
+        <part name="count" type="xsd:long"/>
+    </message>
+
+    <message name="SearchByFullNameRequest">
+        <part name="substring" type="xsd:string"/>
+    </message>
+
+    <message name="SearchByFullNameResponse">
+        <part name="organizations" maxOccurs="unbounded" element="tns:Organization"/>
+    </message>
+
+    <!-- PortType -->
+    <portType name="OrganizationServicePortType">
+        <operation name="getOrganization">
+            <input message="tns:GetOrganizationRequest"/>
+            <output message="tns:GetOrganizationResponse"/>
+        </operation>
+        <operation name="createOrganization">
+            <input message="tns:CreateOrganizationRequest"/>
+            <output message="tns:CreateOrganizationResponse"/>
+        </operation>
+        <operation name="updateOrganization">
+            <input message="tns:UpdateOrganizationRequest"/>
+            <output message="tns:UpdateOrganizationResponse"/>
+        </operation>
+        <operation name="deleteOrganization">
+            <input message="tns:DeleteOrganizationRequest"/>
+            <output message="tns:DeleteOrganizationResponse"/>
+        </operation>
+        <operation name="getFilteredOrganizations">
+            <input message="tns:GetFilteredOrganizationsRequest"/>
+            <output message="tns:GetFilteredOrganizationsResponse"/>
+        </operation>
+        <operation name="countByEmployeesCount">
+            <input message="tns:CountByEmployeesCountRequest"/>
+            <output message="tns:CountByEmployeesCountResponse"/>
+        </operation>
+        <operation name="searchByFullName">
+            <input message="tns:SearchByFullNameRequest"/>
+            <output message="tns:SearchByFullNameResponse"/>
+        </operation>
+    </portType>
+
+    <!-- Binding -->
+    <binding name="OrganizationServiceBinding" type="tns:OrganizationServicePortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="getOrganization">
+            <soap:operation soapAction="http://soa.lab4.organization/getOrganization"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="createOrganization">
+            <soap:operation soapAction="http://soa.lab4.organization/createOrganization"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="updateOrganization">
+            <soap:operation soapAction="http://soa.lab4.organization/updateOrganization"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="deleteOrganization">
+            <soap:operation soapAction="http://soa.lab4.organization/deleteOrganization"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="getFilteredOrganizations">
+            <soap:operation soapAction="http://soa.lab4.organization/getFilteredOrganizations"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="countByEmployeesCount">
+            <soap:operation soapAction="http://soa.lab4.organization/countByEmployeesCount"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="searchByFullName">
+            <soap:operation soapAction="http://soa.lab4.organization/searchByFullName"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+
+    <!-- Service -->
+    <service name="OrganizationService">
+        <port name="OrganizationServicePort" binding="tns:OrganizationServiceBinding">
+            <soap:address location="http://localhost:8080/OrganizationService"/>
+        </port>
+    </service>
+</definitions>

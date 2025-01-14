@@ -26,13 +26,18 @@ public class OrganizationServiceBean implements OrganizationService {
 
     @WebMethod(operationName = "getOrganization")
     @WebResult(name = "organization")
-    public Organization getOrganization(@WebParam(name = "id") Long id) {
+    public Organization getOrganization(@WebParam(name = "id", targetNamespace = "http://organization.lab4.soa/") Long id) {
+        System.out.println("Received id: " + id);
         return organizations.get(id);
     }
 
+
     @WebMethod(operationName = "createOrganization")
     @WebResult(name = "organization")
-    public Organization createOrganization(@WebParam(name = "organization") Organization organization) {
+    public Organization createOrganization(@WebParam(name = "organization", targetNamespace = "http://organization.lab4.soa/") Organization organization) {
+        if (organization == null) {
+            throw new IllegalArgumentException("Received organization is null");
+        }
         System.out.println("Received organization: " + organization);
         organization.setId(idGenerator.getAndIncrement());
         organizations.put(organization.getId(), organization);
@@ -42,8 +47,8 @@ public class OrganizationServiceBean implements OrganizationService {
     @WebMethod(operationName = "updateOrganization")
     @WebResult(name = "organization")
     public Organization updateOrganization(
-            @WebParam(name = "id") Long id,
-            @WebParam(name = "updatedOrganization") Organization updatedOrganization) {
+            @WebParam(name = "id", targetNamespace = "http://organization.lab4.soa/") Long id,
+            @WebParam(name = "updatedOrganization", targetNamespace = "http://organization.lab4.soa/") Organization updatedOrganization) {
         Organization existingOrg = organizations.get(id);
         if (existingOrg != null) {
             updatedOrganization.setId(id);
@@ -62,9 +67,10 @@ public class OrganizationServiceBean implements OrganizationService {
     @WebMethod(operationName = "getFilteredOrganizations")
     @WebResult(name = "organizations")
     public List<Organization> getFilteredOrganizations(
-            @WebParam(name = "creationDate") String creationDate,
-            @WebParam(name = "annualTurnover") Integer annualTurnover,
-            @WebParam(name = "sort") String sort) {
+            @WebParam(name = "creationDate", targetNamespace = "http://organization.lab4.soa/") String creationDate,
+            @WebParam(name = "annualTurnover", targetNamespace = "http://organization.lab4.soa/") Integer annualTurnover,
+            @WebParam(name = "sort", targetNamespace = "http://organization.lab4.soa/") String sort) {
+        System.out.println("getFilteredOrganizations is working");
         Stream<Organization> filteredStream = organizations.values().stream();
 
         if (creationDate != null) {
@@ -118,13 +124,13 @@ public class OrganizationServiceBean implements OrganizationService {
     private Comparator<Organization> getComparator(String field) {
         return switch (field) {
             case "name" -> Comparator.comparing(Organization::getName);
-            case "creationDate" -> Comparator.comparing(Organization::getCreationDate);
-            case "annualTurnover" -> Comparator.comparing(Organization::getAnnualTurnover, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "annualTurnover" -> Comparator.comparingInt(Organization::getAnnualTurnover);
+            case "employeesCount" -> Comparator.comparingInt(Organization::getEmployeesCount);
             default -> null;
         };
     }
 
-    private Comparator<Organization> applySortOrder(Comparator<Organization> comparator, boolean ascending) {
+    private <T> Comparator<T> applySortOrder(Comparator<T> comparator, boolean ascending) {
         return ascending ? comparator : comparator.reversed();
     }
 }

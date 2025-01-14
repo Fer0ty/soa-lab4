@@ -1,38 +1,29 @@
 package soa.lab4.organization.model;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
 
 @XmlRootElement
-public class Coordinates implements Serializable {
+public class Coordinates {
 
-    @NotNull
-    @Max(76)
-    private Integer x;
-
-    @NotNull
-    @Min(-154)
-    private Integer y;
+    private Double x;
+    private Double y;
 
     @XmlElement
-    public Integer getX() {
+    public Double getX() {
         return x;
     }
 
-    public void setX(Integer x) {
+    public void setX(Double x) {
         this.x = x;
     }
 
     @XmlElement
-    public Integer getY() {
+    public Double getY() {
         return y;
     }
 
-    public void setY(Integer y) {
+    public void setY(Double y) {
         this.y = y;
     }
 }

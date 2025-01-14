@@ -2,10 +2,10 @@ package soa.lab4.organization.model;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
 
 @XmlRootElement
-public class Address implements Serializable {
+public class Address {
+
     private String zipCode;
 
     @XmlElement

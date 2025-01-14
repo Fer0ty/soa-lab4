@@ -3,6 +3,7 @@ package soa.lab4.organization.model;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Date;
 
 @XmlRootElement(name = "organization")
@@ -14,10 +15,15 @@ public class Organization {
     private String fullName;
     private Integer annualTurnover;
     private Integer employeesCount;
+
+    // Форматируем дату с использованием кастомного адаптера
     private Date creationDate;
+
     private Coordinates coordinates;
     private Address officialAddress;
-    private String type;
+
+    // Используем перечисление для типа организации
+    private OrganizationType type;
 
     @XmlElement
     public Long getId() {
@@ -65,6 +71,7 @@ public class Organization {
     }
 
     @XmlElement
+    @XmlJavaTypeAdapter(DateAdapter.class) // Адаптер для даты
     public Date getCreationDate() {
         return creationDate;
     }
@@ -92,11 +99,11 @@ public class Organization {
     }
 
     @XmlElement
-    public String getType() {
+    public OrganizationType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(OrganizationType type) {
         this.type = type;
     }
 }

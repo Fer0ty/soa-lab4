@@ -1,13 +1,14 @@
 package soa.lab4.organization.model;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import lombok.ToString;
+
+import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Date;
 
-@XmlRootElement(name = "organization")
-@XmlType(propOrder = {"id", "name", "fullName", "annualTurnover", "employeesCount", "creationDate", "coordinates", "officialAddress", "type"})
+@ToString
+@XmlRootElement(name = "organization", namespace = "http://organization.lab4.soa/")
+@XmlType(propOrder = {"id", "name", "fullName", "annualTurnover", "employeesCount", "coordinates", "creationDate", "officialAddress", "type"})
 public class Organization {
 
     private Long id;
@@ -15,17 +16,26 @@ public class Organization {
     private String fullName;
     private Integer annualTurnover;
     private Integer employeesCount;
-
-    // Форматируем дату с использованием кастомного адаптера
     private Date creationDate;
-
     private Coordinates coordinates;
     private Address officialAddress;
-
-    // Используем перечисление для типа организации
     private OrganizationType type;
 
-    @XmlElement
+    public Organization() {}
+
+    public Organization(Long id, String name, String fullName, Integer annualTurnover, Integer employeesCount, Date creationDate, Coordinates coordinates, Address officialAddress, OrganizationType type) {
+        this.id = id;
+        this.name = name;
+        this.fullName = fullName;
+        this.annualTurnover = annualTurnover;
+        this.employeesCount = employeesCount;
+        this.creationDate = creationDate;
+        this.coordinates = coordinates;
+        this.officialAddress = officialAddress;
+        this.type = type;
+    }
+
+    @XmlElement(namespace = "http://organization.lab4.soa/")
     public Long getId() {
         return id;
     }
@@ -34,7 +44,7 @@ public class Organization {
         this.id = id;
     }
 
-    @XmlElement
+    @XmlElement(namespace = "http://organization.lab4.soa/")
     public String getName() {
         return name;
     }
@@ -43,7 +53,7 @@ public class Organization {
         this.name = name;
     }
 
-    @XmlElement
+    @XmlElement(namespace = "http://organization.lab4.soa/")
     public String getFullName() {
         return fullName;
     }
@@ -52,7 +62,7 @@ public class Organization {
         this.fullName = fullName;
     }
 
-    @XmlElement
+    @XmlElement(namespace = "http://organization.lab4.soa/")
     public Integer getAnnualTurnover() {
         return annualTurnover;
     }
@@ -61,7 +71,7 @@ public class Organization {
         this.annualTurnover = annualTurnover;
     }
 
-    @XmlElement
+    @XmlElement(namespace = "http://organization.lab4.soa/")
     public Integer getEmployeesCount() {
         return employeesCount;
     }
@@ -70,8 +80,8 @@ public class Organization {
         this.employeesCount = employeesCount;
     }
 
-    @XmlElement
-    @XmlJavaTypeAdapter(DateAdapter.class) // Адаптер для даты
+    @XmlElement(namespace = "http://organization.lab4.soa/")
+    @XmlJavaTypeAdapter(DateAdapter.class)
     public Date getCreationDate() {
         return creationDate;
     }
@@ -80,7 +90,7 @@ public class Organization {
         this.creationDate = creationDate;
     }
 
-    @XmlElement
+    @XmlElement(namespace = "http://organization.lab4.soa/")
     public Coordinates getCoordinates() {
         return coordinates;
     }
@@ -89,7 +99,7 @@ public class Organization {
         this.coordinates = coordinates;
     }
 
-    @XmlElement
+    @XmlElement(namespace = "http://organization.lab4.soa/")
     public Address getOfficialAddress() {
         return officialAddress;
     }
@@ -98,7 +108,7 @@ public class Organization {
         this.officialAddress = officialAddress;
     }
 
-    @XmlElement
+    @XmlElement(namespace = "http://organization.lab4.soa/")
     public OrganizationType getType() {
         return type;
     }

@@ -1,14 +1,24 @@
 package soa.lab4.organization.model;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement
+@XmlRootElement(name = "zipCode", namespace = "http://organization.lab4.soa/")
+@XmlType(namespace = "http://organization.lab4.soa/")
+@Setter
 public class Address {
+
+    public Address() {
+    }
 
     private String zipCode;
 
-    @XmlElement
+    @XmlElement(namespace = "http://organization.lab4.soa/")
     public String getZipCode() {
         return zipCode;
     }

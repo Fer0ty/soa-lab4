@@ -27,7 +27,6 @@ public class OrganizationServiceBean implements OrganizationService {
     @WebMethod(operationName = "getOrganization")
     @WebResult(name = "organization")
     public Organization getOrganization(@WebParam(name = "id", targetNamespace = "http://organization.lab4.soa/") Long id) {
-        System.out.println("Received id: " + id);
         return organizations.get(id);
     }
 

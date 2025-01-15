@@ -8,7 +8,7 @@ import java.util.Date;
 
 @ToString
 @XmlRootElement(name = "organization", namespace = "http://organization.lab4.soa/")
-@XmlType(propOrder = {"id", "name", "fullName", "annualTurnover", "employeesCount", "coordinates", "creationDate", "officialAddress", "type"})
+@XmlType(propOrder = {"id", "name", "fullName", "annualTurnover", "employeesCount", "coordinates", "creationDate", "officialAddress", "orgType"})
 public class Organization {
 
     private Long id;
@@ -19,11 +19,11 @@ public class Organization {
     private Date creationDate;
     private Coordinates coordinates;
     private Address officialAddress;
-    private OrganizationType type;
+    private OrganizationType orgType;
 
     public Organization() {}
 
-    public Organization(Long id, String name, String fullName, Integer annualTurnover, Integer employeesCount, Date creationDate, Coordinates coordinates, Address officialAddress, OrganizationType type) {
+    public Organization(Long id, String name, String fullName, Integer annualTurnover, Integer employeesCount, Date creationDate, Coordinates coordinates, Address officialAddress, OrganizationType orgType) {
         this.id = id;
         this.name = name;
         this.fullName = fullName;
@@ -32,7 +32,7 @@ public class Organization {
         this.creationDate = creationDate;
         this.coordinates = coordinates;
         this.officialAddress = officialAddress;
-        this.type = type;
+        this.orgType = orgType;
     }
 
     @XmlElement(namespace = "http://organization.lab4.soa/")
@@ -109,11 +109,11 @@ public class Organization {
     }
 
     @XmlElement(namespace = "http://organization.lab4.soa/")
-    public OrganizationType getType() {
-        return type;
+    public OrganizationType getOrgType() {
+        return orgType;
     }
 
-    public void setType(OrganizationType type) {
-        this.type = type;
+    public void setOrgType(OrganizationType orgType) {
+        this.orgType = orgType;
     }
 }

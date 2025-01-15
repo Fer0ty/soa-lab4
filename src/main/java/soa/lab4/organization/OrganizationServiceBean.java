@@ -69,7 +69,6 @@ public class OrganizationServiceBean implements OrganizationService {
             @WebParam(name = "creationDate", targetNamespace = "http://organization.lab4.soa/") String creationDate,
             @WebParam(name = "annualTurnover", targetNamespace = "http://organization.lab4.soa/") Integer annualTurnover,
             @WebParam(name = "sort", targetNamespace = "http://organization.lab4.soa/") String sort) {
-        System.out.println("getFilteredOrganizations is working");
         Stream<Organization> filteredStream = organizations.values().stream();
 
         if (creationDate != null) {

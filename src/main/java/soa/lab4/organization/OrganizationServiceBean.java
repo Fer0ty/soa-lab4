@@ -59,7 +59,8 @@ public class OrganizationServiceBean implements OrganizationService {
 
     @WebMethod(operationName = "deleteOrganization")
     @WebResult(name = "result")
-    public boolean deleteOrganization(@WebParam(name = "id") Long id) {
+    public boolean deleteOrganization(@WebParam(name = "id", targetNamespace = "http://organization.lab4.soa/") Long id) {
+        System.out.println(id);
         return organizations.remove(id) != null;
     }
 

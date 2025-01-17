@@ -127,8 +127,8 @@ payload.body.getOrganizationResponse.organization   ]]></ee:set-payload>
 
 
 
-    <flow name="createOrganization" doc:id="1b97b845-fdba-4826-8d80-41d71418e205">
-        <http:listener doc:name="Listener" doc:id="8dcc5789-b2de-482e-9d4f-9cc3646575c5" config-ref="HTTP_Listener_config" path="/api/organizations/" allowedMethods="POST">
+    <flow name="createOrganization" doc:id="9506d767-930e-416f-abe0-e09007a8b6d5">
+        <http:listener doc:name="Listener" doc:id="99b94089-21f1-4337-bce4-47b73cbbd20f" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="POST">
             <http:response>
                 <http:headers><![CDATA[#[output application/java
             ---
@@ -140,10 +140,10 @@ payload.body.getOrganizationResponse.organization   ]]></ee:set-payload>
             }]]]></http:headers>
             </http:response>
         </http:listener>
-        <ee:transform doc:name="Transform Message" doc:id="bed19e8e-2ea0-408a-8dec-8eeca0c5d21c">
+        <ee:transform doc:name="Transform Message" doc:id="00eba00d-e585-4943-b94b-8bffdd94586f">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
-output text/xml
+output text/xml skipNullOn="everywhere"
 ns tns http://organization.lab4.soa/
 ---
 {
@@ -168,9 +168,9 @@ ns tns http://organization.lab4.soa/
             </ee:message>
         </ee:transform>
 
-        <wsc:consume operation="createOrganization" doc:name="Consume" doc:id="9185c07a-66f7-478f-ba70-6a4341b57120" config-ref="Web_Service_Consumer_Config"/>
+        <wsc:consume operation="createOrganization" doc:name="Consume" doc:id="0d41cdc2-6374-446d-b139-61c0012caf6e" config-ref="Web_Service_Consumer_Config"/>
 
-        <ee:transform doc:name="Transform Message" doc:id="39659def-5d11-4b78-90e0-5f993e9ae588">
+        <ee:transform doc:name="Transform Message" doc:id="581c7a78-0c19-4e7b-9745-93572d4a5e39">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -178,8 +178,77 @@ output application/json
 payload.body.createOrganizationResponse.organization]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-
     </flow>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <flow name="updateOrganization" doc:id="9219f449-952b-4edb-b71f-a0a06cfb2cbe">
+        <http:listener doc:name="Listener" doc:id="0ae9f1b2-feb4-4a89-afa5-d35ef3d0817c" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="PUT">
+            <http:response>
+                <http:headers><![CDATA[#[output application/java
+            ---
+            {
+                "Access-Control-Allow-Origin" : "*",
+                "Access-Control-Allow-Methods" : "*",
+                "Access-Control-Allow-Headers" : "*",
+                "Access-Control-Allow-Credentials" : "true"
+            }]]]></http:headers>
+            </http:response>
+        </http:listener>
+
+        <ee:transform doc:name="Transform Message" doc:id="62e2f337-ab40-45b2-be1b-65740288fc58">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns tns http://organization.lab4.soa/
+---
+{
+    tns#updateOrganization: {
+        tns#id: attributes.uriParams.id,
+        tns#updatedOrganization: {
+            tns#name: payload.name,
+            tns#fullName: payload.fullName,
+            tns#annualTurnover: payload.annualTurnover,
+            tns#employeesCount: payload.employeesCount,
+            tns#coordinates: {
+                tns#x: payload.coordinates.x,
+                tns#y: payload.coordinates.y
+            },
+            tns#creationDate: payload.creationDate,
+            tns#officialAddress: {
+                tns#zipCode: payload.officialAddress.zipCode
+            },
+            tns#orgType: payload.orgType
+        }
+    }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <logger level="INFO" doc:name="Logger" doc:id="3d9d9954-c52f-4b14-a652-3463f4538df0" message="#[payload]"/>
+        <wsc:consume operation="updateOrganization" doc:name="Consume" doc:id="b62f1b7d-c8ec-47b3-b1ec-8700d5c1eb00" config-ref="Web_Service_Consumer_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="eba65fd1-ae08-49f4-aa9e-b52c89dc73bb">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+ns ns0 http://organization.lab4.soa/
+output application/json
+---
+payload.body]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+
 
 
 

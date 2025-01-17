@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+    http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+    http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+    http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b8919715-a453-43a5-9c8c-27938960e284" >
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+
+    <wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="93ec1ae6-3ee3-48dc-bca2-663aa6b7e7f2" >
+        <wsc:connection wsdlLocation="organization-service.wsdl" service="OrganizationServiceBeanService" port="OrganizationServiceBeanPort" address="http://localhost:8080/ws/organization" />
+    </wsc:config>
+
+    <flow name="getAll" doc:id="b8faeef7-a701-4009-b7fb-b21c62e1cead" >
+        <http:listener doc:name="Listener" doc:id="7815b4b1-6d13-4ecd-91a2-d47d185f3cb2" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="GET">
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+                ---
+                {
+                    "Access-Control-Allow-Origin" : "*",
+                    "Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+                    "Access-Control-Allow-Headers" : "*",
+                    "Access-Control-Allow-Credentials" : "true"
+                }]]]></http:headers>
+            </http:response>
+        </http:listener>
+
+        <ee:transform doc:name="Transform Message" doc:id="9c04feab-963e-43dd-9e34-d94ba01ee560">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+                output text/xml skipNullOn="everywhere"
+                ns web http://organization.lab4.soa/
+                ---
+                {
+                     web#getFilteredOrganizations: {
+                        web#creationDate: attributes.queryParams.creationDate,
+                        web#annualTurnover: attributes.queryParams.annualTurnover,
+                        web#sort: attributes.queryParams.sort
+                     }
+                }]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <wsc:consume operation="getFilteredOrganizations" doc:name="Consume" doc:id="2534f7da-8a82-4371-92aa-68ca42247087" config-ref="Web_Service_Consumer_Config"/>
+
+        <!-- Преобразование XML в JSON -->
+        <ee:transform doc:name="XML to JSON" doc:id="6713549f-1868-4b13-b0ba-f02ee1b29236">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "organizations": payload.body.getFilteredOrganizationsResponse.*organizations map (org) -> {
+    "id": org.id as String,
+    "name": org.name as String,
+    "fullName": org.fullName as String,
+    "annualTurnover": org.annualTurnover as Number,
+    "employeesCount": org.employeesCount as Number,
+    "coordinates": {
+      "x": org.coordinates.x as Number,
+      "y": org.coordinates.y as Number
+    },
+    "creationDate": org.creationDate as String,
+    "officialAddress": {
+      "zipCode": org.officialAddress.zipCode as String
+    },
+    "orgType": org.orgType as String
+  }
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+    </flow>
+</mule>

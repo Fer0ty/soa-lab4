@@ -272,7 +272,6 @@ payload.body]]></ee:set-payload>
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
 output text/xml skipNullOn="everywhere"
-ns soapenv http://schemas.xmlsoap.org/soap/envelope/
 ns org http://organization.lab4.soa/
 ---
 {
@@ -283,7 +282,6 @@ ns org http://organization.lab4.soa/
 ]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-        <logger level="INFO" doc:name="Logger" doc:id="cd17d431-3860-475d-aac2-daa8a43139d6" message="#[payload]"/>
         <wsc:consume operation="deleteOrganization" doc:name="Consume" doc:id="429d4d47-6b86-479b-b099-37ec8129fb41" config-ref="Web_Service_Consumer_Config"/>
         <ee:transform doc:name="Transform Message" doc:id="d05cbf61-9d85-4723-94d0-8e00f3d8da54" >
             <ee:message >
@@ -296,8 +294,72 @@ payload.body.deleteOrganizationResponse.result
             </ee:message>
         </ee:transform>
     </flow>
-
-
-
-
+    <flow name="countByEmployeesCount" doc:id="a1cbd04f-17b1-4ef2-8d9b-094ccfa1d310" >
+        <http:listener doc:name="Listener" doc:id="1319c469-0474-4d5b-931b-ca7e42aa406e" config-ref="HTTP_Listener_config" path="/api/organizations/count-by-employees" allowedMethods="GET"/>
+        <ee:transform doc:name="Transform Message" doc:id="ddcd0594-37ae-4dfd-a0ce-c74a93ad0a80" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns org http://organization.lab4.soa/
+---
+{
+    org#countByEmployeesCount: {
+        org#count: payload.count
+    }
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <wsc:consume doc:name="Consume" doc:id="e5a31761-3063-425d-a784-87845c1dc741" config-ref="Web_Service_Consumer_Config" operation="countByEmployeesCount"/>
+        <ee:transform doc:name="Transform Message" doc:id="90b78ce7-9dfe-4ba1-a7f3-f07f0c69b1e9" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.body.countByEmployeesCountResponse.count]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="soa4Flow" doc:id="9fd3b2b3-5b1a-4d55-9b6a-8a4f33a91814" >
+        <http:listener doc:name="Listener" doc:id="259bb85d-b478-486e-95c5-2fa49b09e11c" config-ref="HTTP_Listener_config" path="/api/organizations/search-by-fullname" allowedMethods="GET"/>
+        <ee:transform doc:name="Transform Message" doc:id="31c50d86-5e73-437e-a5ec-4ad2a6c7d366" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns org http://organization.lab4.soa/
+---
+{
+    org#searchByFullName: {
+        org#substring: payload.substring
+    }
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <wsc:consume operation="searchByFullName" doc:name="Consume" doc:id="fd59b980-3a6f-474e-9224-0c3dee76d4ef" config-ref="Web_Service_Consumer_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="8ad13ecd-6e9c-4042-aa76-9a7045de57d8" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+	payload.body.searchByFullNameResponse.*organizations map (org) -> {
+    "id": org.id,
+    "name": org.name,
+    "fullName": org.fullName,
+    "annualTurnover": org.annualTurnover,
+    "employeesCount": org.employeesCount,
+    "coordinates": {
+      "x": org.coordinates.x,
+      "y": org.coordinates.y
+    },
+    "creationDate": org.creationDate,
+    "officialAddress": {
+      "zipCode": org.officialAddress.zipCode
+    },
+    "orgType": org.orgType
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
 </mule>

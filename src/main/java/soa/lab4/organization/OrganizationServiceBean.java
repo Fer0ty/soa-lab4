@@ -106,7 +106,7 @@ public class OrganizationServiceBean implements OrganizationService {
 
     @WebMethod(operationName = "countByEmployeesCount")
     @WebResult(name = "count")
-    public long countByEmployeesCount(@WebParam(name = "count") Long count) {
+    public long countByEmployeesCount(@WebParam(name = "count", targetNamespace = "http://organization.lab4.soa/") Long count) {
         return organizations.values().stream()
                 .filter(org -> org.getEmployeesCount() != null && org.getEmployeesCount() > count)
                 .count();
@@ -114,7 +114,7 @@ public class OrganizationServiceBean implements OrganizationService {
 
     @WebMethod(operationName = "searchByFullName")
     @WebResult(name = "organizations")
-    public List<Organization> searchByFullName(@WebParam(name = "substring") String substring) {
+    public List<Organization> searchByFullName(@WebParam(name = "substring", targetNamespace = "http://organization.lab4.soa/") String substring) {
         return organizations.values().stream()
                 .filter(org -> org.getFullName() != null && org.getFullName().contains(substring))
                 .collect(Collectors.toList());

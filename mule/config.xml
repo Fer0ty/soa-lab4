@@ -7,16 +7,16 @@
     http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
     http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 
-    <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b8919715-a453-43a5-9c8c-27938960e284" >
+    <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c48fb43c-d4c0-4ff4-92d0-ea639275e2ee" >
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
 
-    <wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="93ec1ae6-3ee3-48dc-bca2-663aa6b7e7f2" >
+    <wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="7d02329f-b685-44d4-87e0-229e49e5043f" >
         <wsc:connection wsdlLocation="organization-service.wsdl" service="OrganizationServiceBeanService" port="OrganizationServiceBeanPort" address="http://localhost:8080/ws/organization" />
     </wsc:config>
 
-    <flow name="getAll" doc:id="b8faeef7-a701-4009-b7fb-b21c62e1cead" >
-        <http:listener doc:name="Listener" doc:id="7815b4b1-6d13-4ecd-91a2-d47d185f3cb2" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="GET">
+    <flow name="getAll" doc:id="968edd93-685d-4467-a0ea-bb228bb4dbb4" >
+        <http:listener doc:name="Listener" doc:id="163747bb-f9e9-4c6e-b781-12654ebb1a38" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="GET">
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
                 ---
@@ -29,7 +29,7 @@
             </http:response>
         </http:listener>
 
-        <ee:transform doc:name="Transform Message" doc:id="9c04feab-963e-43dd-9e34-d94ba01ee560">
+        <ee:transform doc:name="Transform Message" doc:id="4769dd7a-dbc9-4f0b-a840-1dc3e2b53ade">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
                 output text/xml skipNullOn="everywhere"
@@ -45,30 +45,30 @@
             </ee:message>
         </ee:transform>
 
-        <wsc:consume operation="getFilteredOrganizations" doc:name="Consume" doc:id="2534f7da-8a82-4371-92aa-68ca42247087" config-ref="Web_Service_Consumer_Config"/>
+        <wsc:consume operation="getFilteredOrganizations" doc:name="Consume" doc:id="395ca49b-6a8a-4aa0-a2a2-2f1307719cf2" config-ref="Web_Service_Consumer_Config"/>
 
         <!-- Преобразование XML в JSON -->
-        <ee:transform doc:name="XML to JSON" doc:id="6713549f-1868-4b13-b0ba-f02ee1b29236">
+        <ee:transform doc:name="XML to JSON" doc:id="8de540c2-6f76-4954-99b8-432f76a15159">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
   "organizations": payload.body.getFilteredOrganizationsResponse.*organizations map (org) -> {
-    "id": org.id as String,
-    "name": org.name as String,
-    "fullName": org.fullName as String,
-    "annualTurnover": org.annualTurnover as Number,
-    "employeesCount": org.employeesCount as Number,
+    "id": org.id,
+    "name": org.name,
+    "fullName": org.fullName,
+    "annualTurnover": org.annualTurnover,
+    "employeesCount": org.employeesCount,
     "coordinates": {
-      "x": org.coordinates.x as Number,
-      "y": org.coordinates.y as Number
+      "x": org.coordinates.x,
+      "y": org.coordinates.y
     },
-    "creationDate": org.creationDate as String,
+    "creationDate": org.creationDate,
     "officialAddress": {
-      "zipCode": org.officialAddress.zipCode as String
+      "zipCode": org.officialAddress.zipCode
     },
-    "orgType": org.orgType as String
+    "orgType": org.orgType
   }
 }
 ]]></ee:set-payload>
@@ -76,4 +76,46 @@ output application/json
         </ee:transform>
 
     </flow>
+
+
+
+    <flow name="getOrganization" doc:id="47d06da2-d361-405a-bdaa-aabdea8310e0" >
+        <http:listener doc:name="Listener" doc:id="fa7475a9-6b06-4b7c-821f-38f7f145f520" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="GET">
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+                ---
+                {
+                    "Access-Control-Allow-Origin" : "*",
+                    "Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+                    "Access-Control-Allow-Headers" : "*",
+                    "Access-Control-Allow-Credentials" : "true"
+                }]]]></http:headers>
+            </http:response>
+        </http:listener>
+        <ee:transform doc:name="Transform Message" doc:id="7f4189b8-cc9c-4d68-a8d1-6a30d4c35488" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns web http://organization.lab4.soa/
+---
+{
+	web#getOrganization: {
+		web#id: attributes.uriParams.id
+	}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <wsc:consume operation="getOrganization" doc:name="Consume" doc:id="ee34237e-19d5-4336-aba1-e4af32a5ac26" config-ref="Web_Service_Consumer_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="b60121aa-b018-48af-b5f7-5049c9ff232a" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.body.getOrganizationResponse.organization   ]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+    </flow>
+
+
 </mule>

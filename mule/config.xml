@@ -118,4 +118,69 @@ payload.body.getOrganizationResponse.organization   ]]></ee:set-payload>
     </flow>
 
 
+
+
+
+
+
+
+
+
+
+    <flow name="createOrganization" doc:id="1b97b845-fdba-4826-8d80-41d71418e205">
+        <http:listener doc:name="Listener" doc:id="8dcc5789-b2de-482e-9d4f-9cc3646575c5" config-ref="HTTP_Listener_config" path="/api/organizations/" allowedMethods="POST">
+            <http:response>
+                <http:headers><![CDATA[#[output application/java
+            ---
+            {
+                "Access-Control-Allow-Origin" : "*",
+                "Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+                "Access-Control-Allow-Headers" : "*",
+                "Access-Control-Allow-Credentials" : "true"
+            }]]]></http:headers>
+            </http:response>
+        </http:listener>
+        <ee:transform doc:name="Transform Message" doc:id="bed19e8e-2ea0-408a-8dec-8eeca0c5d21c">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output text/xml
+ns tns http://organization.lab4.soa/
+---
+{
+    tns#createOrganization: {
+        tns#organization: {
+            tns#name: payload.name,
+            tns#fullName: payload.fullName,
+            tns#annualTurnover: payload.annualTurnover,
+            tns#employeesCount: payload.employeesCount,
+            tns#coordinates: {
+                tns#x: payload.coordinates.x,
+                tns#y: payload.coordinates.y
+            },
+            tns#creationDate: payload.creationDate,
+            tns#officialAddress: {
+                tns#zipCode: payload.officialAddress.zipCode
+            },
+            tns#orgType: payload.orgType
+        }
+    }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <wsc:consume operation="createOrganization" doc:name="Consume" doc:id="9185c07a-66f7-478f-ba70-6a4341b57120" config-ref="Web_Service_Consumer_Config"/>
+
+        <ee:transform doc:name="Transform Message" doc:id="39659def-5d11-4b78-90e0-5f993e9ae588">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.body.createOrganizationResponse.organization]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+    </flow>
+
+
+
 </mule>

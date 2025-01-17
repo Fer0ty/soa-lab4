@@ -235,8 +235,6 @@ ns tns http://organization.lab4.soa/
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-
-        <logger level="INFO" doc:name="Logger" doc:id="3d9d9954-c52f-4b14-a652-3463f4538df0" message="#[payload]"/>
         <wsc:consume operation="updateOrganization" doc:name="Consume" doc:id="b62f1b7d-c8ec-47b3-b1ec-8700d5c1eb00" config-ref="Web_Service_Consumer_Config"/>
         <ee:transform doc:name="Transform Message" doc:id="eba65fd1-ae08-49f4-aa9e-b52c89dc73bb">
             <ee:message>
@@ -245,6 +243,56 @@ ns ns0 http://organization.lab4.soa/
 output application/json
 ---
 payload.body]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+
+
+
+
+
+
+
+
+
+    <flow name="deleteOrganization" doc:id="1b8d7549-5431-4647-827c-7845a690a528" >
+        <http:listener doc:name="Listener" doc:id="5709bb82-8983-4502-b905-cc7475e05f26" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="DELETE">
+            <http:response>
+                <http:headers><![CDATA[#[output application/java
+	            ---
+	            {
+	                "Access-Control-Allow-Origin" : "*",
+	                "Access-Control-Allow-Methods" : "*",
+	                "Access-Control-Allow-Headers" : "*",
+	                "Access-Control-Allow-Credentials" : "true"
+	            }]]]></http:headers>
+            </http:response>
+        </http:listener>
+        <ee:transform doc:name="Transform Message" doc:id="7b37c409-091a-499e-8577-a519497374ad" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns soapenv http://schemas.xmlsoap.org/soap/envelope/
+ns org http://organization.lab4.soa/
+---
+{
+    org#deleteOrganization: {
+        org#id: attributes.uriParams.id as String
+    }
+}
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Logger" doc:id="cd17d431-3860-475d-aac2-daa8a43139d6" message="#[payload]"/>
+        <wsc:consume operation="deleteOrganization" doc:name="Consume" doc:id="429d4d47-6b86-479b-b099-37ec8129fb41" config-ref="Web_Service_Consumer_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="d05cbf61-9d85-4723-94d0-8e00f3d8da54" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://organization.lab4.soa/
+output application/json
+---
+payload.body.deleteOrganizationResponse.result
+]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>

@@ -13,10 +13,13 @@ import javax.xml.bind.annotation.XmlType;
 @Setter
 public class Address {
 
+    private String zipCode;
+
     public Address() {
     }
-
-    private String zipCode;
+    public Address(String zipCode) {
+        this.zipCode = zipCode;
+    }
 
     @XmlElement(namespace = "http://organization.lab4.soa/")
     public String getZipCode() {

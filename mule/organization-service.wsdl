@@ -52,6 +52,12 @@
     <message name="searchByFullNameResponse">
         <part name="parameters" element="tns:searchByFullNameResponse"/>
     </message>
+    <message name="groupByAddress">
+        <part name="parameters" element="tns:groupByAddress"/>
+    </message>
+    <message name="groupByAddressResponse">
+        <part name="parameters" element="tns:groupByAddressResponse"/>
+    </message>
     <portType name="OrganizationServiceBean">
         <operation name="getOrganization">
             <input wsam:Action="http://organization.lab4.soa/OrganizationServiceBean/getOrganizationRequest" message="tns:getOrganization"/>
@@ -80,6 +86,10 @@
         <operation name="searchByFullName">
             <input wsam:Action="http://organization.lab4.soa/OrganizationServiceBean/searchByFullNameRequest" message="tns:searchByFullName"/>
             <output wsam:Action="http://organization.lab4.soa/OrganizationServiceBean/searchByFullNameResponse" message="tns:searchByFullNameResponse"/>
+        </operation>
+        <operation name="groupByAddress">
+            <input wsam:Action="http://organization.lab4.soa/OrganizationServiceBean/groupByAddressRequest" message="tns:groupByAddress"/>
+            <output wsam:Action="http://organization.lab4.soa/OrganizationServiceBean/groupByAddressResponse" message="tns:groupByAddressResponse"/>
         </operation>
     </portType>
     <binding name="OrganizationServiceBeanPortBinding" type="tns:OrganizationServiceBean">
@@ -139,6 +149,15 @@
             </output>
         </operation>
         <operation name="searchByFullName">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="groupByAddress">
             <soap:operation soapAction=""/>
             <input>
                 <soap:body use="literal"/>

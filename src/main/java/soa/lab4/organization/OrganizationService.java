@@ -1,9 +1,13 @@
 package soa.lab4.organization;
 
 import javax.jws.WebService;
+
+import soa.lab4.organization.model.Address;
+import soa.lab4.organization.model.AddressGroup;
 import soa.lab4.organization.model.Organization;
 
 import java.util.List;
+import java.util.Map;
 
 @WebService(serviceName = "OrganizationService", portName = "OrganizationServicePort")
 public interface OrganizationService {
@@ -14,4 +18,6 @@ public interface OrganizationService {
     List<Organization> getFilteredOrganizations(String creationDate, Integer annualTurnover, String sort);
     long countByEmployeesCount(Long count);
     List<Organization> searchByFullName(String substring);
+
+    List<AddressGroup> groupByOfficialAddress();
 }

@@ -5,6 +5,9 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.soap.SOAPBinding;
+
+import soa.lab4.organization.model.Address;
+import soa.lab4.organization.model.AddressGroup;
 import soa.lab4.organization.model.Organization;
 
 import java.text.SimpleDateFormat;
@@ -34,6 +37,7 @@ public class OrganizationServiceBean implements OrganizationService {
     @WebMethod(operationName = "createOrganization")
     @WebResult(name = "organization")
     public Organization createOrganization(@WebParam(name = "organization", targetNamespace = "http://organization.lab4.soa/") Organization organization) {
+        System.out.println(organization);
         if (organization == null) {
             throw new IllegalArgumentException("Received organization is null");
         }
@@ -132,4 +136,16 @@ public class OrganizationServiceBean implements OrganizationService {
     private <T> Comparator<T> applySortOrder(Comparator<T> comparator, boolean ascending) {
         return ascending ? comparator : comparator.reversed();
     }
+
+    @WebMethod(operationName = "groupByAddress")
+    @WebResult(name = "addressGroup")
+    public List<AddressGroup> groupByOfficialAddress() {
+        return organizations.values().stream()
+                .collect(Collectors.groupingBy(org -> org.getOfficialAddress().getZipCode(), Collectors.counting()))
+                .entrySet().stream()
+                .map(entry -> new AddressGroup(new Address(entry.getKey()), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+
 }

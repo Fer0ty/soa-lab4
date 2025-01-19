@@ -12,21 +12,35 @@
     </http:listener-config>
 
     <wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="7d02329f-b685-44d4-87e0-229e49e5043f" >
-        <wsc:connection wsdlLocation="organization-service.wsdl" service="OrganizationServiceBeanService" port="OrganizationServiceBeanPort" address="http://localhost:8080/ws/organization" />
+        <wsc:connection wsdlLocation="organization-service.wsdl" service="OrganizationServiceBeanService" port="OrganizationServiceBeanPort" address="http://localhost:8080/ws/organization" >
+            <wsc:web-service-security actor="http://schemas.xmlsoap.org/soap/actor/next" />
+        </wsc:connection>
     </wsc:config>
 
     <flow name="getAll" doc:id="968edd93-685d-4467-a0ea-bb228bb4dbb4" >
         <http:listener doc:name="Listener" doc:id="163747bb-f9e9-4c6e-b781-12654ebb1a38" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="GET">
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
-                ---
-                {
-                    "Access-Control-Allow-Origin" : "*",
-                    "Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
-                    "Access-Control-Allow-Headers" : "*",
-                    "Access-Control-Allow-Credentials" : "true"
-                }]]]></http:headers>
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
             </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:error-response>
+
         </http:listener>
 
         <ee:transform doc:name="Transform Message" doc:id="4769dd7a-dbc9-4f0b-a840-1dc3e2b53ade">
@@ -53,8 +67,7 @@
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{
-  "organizations": payload.body.getFilteredOrganizationsResponse.*organizations map (org) -> {
+payload.body.getFilteredOrganizationsResponse.*organizations map (org) -> {
     "id": org.id,
     "name": org.name,
     "fullName": org.fullName,
@@ -70,7 +83,7 @@ output application/json
     },
     "orgType": org.orgType
   }
-}
+
 ]]></ee:set-payload>
             </ee:message>
         </ee:transform>
@@ -83,14 +96,26 @@ output application/json
         <http:listener doc:name="Listener" doc:id="fa7475a9-6b06-4b7c-821f-38f7f145f520" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="GET">
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
-                ---
-                {
-                    "Access-Control-Allow-Origin" : "*",
-                    "Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
-                    "Access-Control-Allow-Headers" : "*",
-                    "Access-Control-Allow-Credentials" : "true"
-                }]]]></http:headers>
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
             </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:error-response>
+
         </http:listener>
         <ee:transform doc:name="Transform Message" doc:id="7f4189b8-cc9c-4d68-a8d1-6a30d4c35488" >
             <ee:message >
@@ -129,17 +154,30 @@ payload.body.getOrganizationResponse.organization   ]]></ee:set-payload>
 
     <flow name="createOrganization" doc:id="9506d767-930e-416f-abe0-e09007a8b6d5">
         <http:listener doc:name="Listener" doc:id="99b94089-21f1-4337-bce4-47b73cbbd20f" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="POST">
-            <http:response>
-                <http:headers><![CDATA[#[output application/java
-            ---
-            {
-                "Access-Control-Allow-Origin" : "*",
-                "Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Credentials" : "true"
-            }]]]></http:headers>
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
             </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:error-response>
+
         </http:listener>
+        <logger level="INFO" doc:name="Logger" doc:id="b0e9abb7-4e2c-4391-b417-fb30f58b318d" message="#[payload]"/>
         <ee:transform doc:name="Transform Message" doc:id="00eba00d-e585-4943-b94b-8bffdd94586f">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
@@ -195,16 +233,28 @@ payload.body.createOrganizationResponse.organization]]></ee:set-payload>
 
     <flow name="updateOrganization" doc:id="9219f449-952b-4edb-b71f-a0a06cfb2cbe">
         <http:listener doc:name="Listener" doc:id="0ae9f1b2-feb4-4a89-afa5-d35ef3d0817c" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="PUT">
-            <http:response>
-                <http:headers><![CDATA[#[output application/java
-            ---
-            {
-                "Access-Control-Allow-Origin" : "*",
-                "Access-Control-Allow-Methods" : "*",
-                "Access-Control-Allow-Headers" : "*",
-                "Access-Control-Allow-Credentials" : "true"
-            }]]]></http:headers>
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
             </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:error-response>
+
         </http:listener>
 
         <ee:transform doc:name="Transform Message" doc:id="62e2f337-ab40-45b2-be1b-65740288fc58">
@@ -257,16 +307,27 @@ payload.body]]></ee:set-payload>
 
     <flow name="deleteOrganization" doc:id="1b8d7549-5431-4647-827c-7845a690a528" >
         <http:listener doc:name="Listener" doc:id="5709bb82-8983-4502-b905-cc7475e05f26" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="DELETE">
-            <http:response>
-                <http:headers><![CDATA[#[output application/java
-	            ---
-	            {
-	                "Access-Control-Allow-Origin" : "*",
-	                "Access-Control-Allow-Methods" : "*",
-	                "Access-Control-Allow-Headers" : "*",
-	                "Access-Control-Allow-Credentials" : "true"
-	            }]]]></http:headers>
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
             </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:error-response>
         </http:listener>
         <ee:transform doc:name="Transform Message" doc:id="7b37c409-091a-499e-8577-a519497374ad" >
             <ee:message >
@@ -294,8 +355,33 @@ payload.body.deleteOrganizationResponse.result
             </ee:message>
         </ee:transform>
     </flow>
+
+
     <flow name="countByEmployeesCount" doc:id="a1cbd04f-17b1-4ef2-8d9b-094ccfa1d310" >
-        <http:listener doc:name="Listener" doc:id="1319c469-0474-4d5b-931b-ca7e42aa406e" config-ref="HTTP_Listener_config" path="/api/organizations/count-by-employees" allowedMethods="GET"/>
+        <http:listener doc:name="Listener" doc:id="1319c469-0474-4d5b-931b-ca7e42aa406e" config-ref="HTTP_Listener_config" path="/api/organizations/count-by-employees" allowedMethods="GET">
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:error-response>
+
+        </http:listener>
         <ee:transform doc:name="Transform Message" doc:id="ddcd0594-37ae-4dfd-a0ce-c74a93ad0a80" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
@@ -320,8 +406,44 @@ payload.body.countByEmployeesCountResponse.count]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
-    <flow name="soa4Flow" doc:id="9fd3b2b3-5b1a-4d55-9b6a-8a4f33a91814" >
-        <http:listener doc:name="Listener" doc:id="259bb85d-b478-486e-95c5-2fa49b09e11c" config-ref="HTTP_Listener_config" path="/api/organizations/search-by-fullname" allowedMethods="GET"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <flow name="searchByFullName" doc:id="9fd3b2b3-5b1a-4d55-9b6a-8a4f33a91814" >
+        <http:listener doc:name="Listener" doc:id="259bb85d-b478-486e-95c5-2fa49b09e11c" config-ref="HTTP_Listener_config" path="/api/organizations/search-by-fullname" allowedMethods="GET">
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:error-response>
+
+        </http:listener>
         <ee:transform doc:name="Transform Message" doc:id="31c50d86-5e73-437e-a5ec-4ad2a6c7d366" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
@@ -362,4 +484,80 @@ output application/json
             </ee:message>
         </ee:transform>
     </flow>
+
+
+
+
+
+
+
+
+
+
+    <flow name="soa4Flow" doc:id="f907d329-2f67-4928-a3bb-fe7171043294" >
+        <http:listener doc:name="Listener" doc:id="9d9769ec-f027-436a-a8b9-bd84fa24fdec" config-ref="HTTP_Listener_config" path="/api/organizations/group-by-address" allowedMethods="GET"/>
+        <ee:transform doc:name="Transform Message" doc:id="1de8b8ff-1e04-480a-a35d-032aa3ecaba4" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns org http://organization.lab4.soa/
+---
+{
+    org#groupByAddress: {}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <wsc:consume operation="groupByAddress" doc:name="Consume" doc:id="62ae1012-87ad-433e-9c4c-8f09c3be8e62" config-ref="Web_Service_Consumer_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="bfff4059-97d9-4510-a65c-d3c1b8d49917" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.body.groupByAddressResponse.*officialAddressGroup
+    reduce ((item, acc = {}) ->
+        acc ++ {(item.address.zipCode): item.count})
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="organizationsOptions" doc:id="e4ade84b-28dd-474c-a645-a8560928c9e7" >
+        <http:listener doc:name="Listener" doc:id="9b53b643-99ac-4726-8f35-bfd39fe8c56a" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="OPTIONS" >
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "*",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+            </http:error-response>
+        </http:listener>
+        <logger level="INFO" doc:name="Logger" doc:id="37a80a06-ec10-49c8-a82e-8dd1025cf786" />
+    </flow>
+    <flow name="organizationsOptions1" doc:id="94266670-ab29-45a9-841c-f182c4f0cf1e" >
+        <http:listener doc:name="Listener" doc:id="6ab8fed3-28fb-429c-80a9-aed2a0b89df1" config-ref="HTTP_Listener_config" path="/api/organizations/" allowedMethods="OPTIONS" >
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "*",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+            </http:error-response>
+        </http:listener>
+        <logger level="INFO" doc:name="Logger" doc:id="4898c81b-fdfd-49fe-a5e0-a4306370b8fd" />
+    </flow>
+
+
+
+
 </mule>

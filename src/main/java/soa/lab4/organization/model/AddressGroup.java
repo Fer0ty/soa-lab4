@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
-@XmlRootElement(name = "AddressGroup", namespace = "http://organization.lab4.soa/")
+@XmlRootElement(name = "officialAddressGroup", namespace = "http://organization.lab4.soa/")
 @XmlType(propOrder = {"address", "count"}, namespace = "http://organization.lab4.soa/")
 public class AddressGroup {
 

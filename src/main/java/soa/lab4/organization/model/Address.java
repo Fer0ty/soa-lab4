@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name = "zipCode", namespace = "http://organization.lab4.soa/")
+@XmlRootElement(name = "officialAddress", namespace = "http://organization.lab4.soa/")
 @XmlType(namespace = "http://organization.lab4.soa/")
 @Setter
 public class Address {

@@ -138,7 +138,7 @@ public class OrganizationServiceBean implements OrganizationService {
     }
 
     @WebMethod(operationName = "groupByAddress")
-    @WebResult(name = "addressGroup")
+    @WebResult(name = "officialAddressGroup")
     public List<AddressGroup> groupByOfficialAddress() {
         return organizations.values().stream()
                 .collect(Collectors.groupingBy(org -> org.getOfficialAddress().getZipCode(), Collectors.counting()))

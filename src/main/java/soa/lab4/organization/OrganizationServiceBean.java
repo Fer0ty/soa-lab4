@@ -5,6 +5,9 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.soap.SOAPBinding;
+import javax.xml.namespace.QName;
+import javax.xml.soap.*;
+import javax.xml.ws.soap.SOAPFaultException;
 
 import soa.lab4.organization.model.Address;
 import soa.lab4.organization.model.AddressGroup;
@@ -30,18 +33,22 @@ public class OrganizationServiceBean implements OrganizationService {
     @WebMethod(operationName = "getOrganization")
     @WebResult(name = "organization")
     public Organization getOrganization(@WebParam(name = "id", targetNamespace = "http://organization.lab4.soa/") Long id) {
-        return organizations.get(id);
+        Organization organization = organizations.get(id);
+        if (organization == null) {
+            throw createSOAPFaultException("OrganizationNotFoundException",
+                    "Organization with id " + id + " not found",
+                    "SOAP-ENV:Client");
+        }
+        return organization;
     }
 
 
     @WebMethod(operationName = "createOrganization")
     @WebResult(name = "organization")
     public Organization createOrganization(@WebParam(name = "organization", targetNamespace = "http://organization.lab4.soa/") Organization organization) {
-        System.out.println(organization);
         if (organization == null) {
-            throw new IllegalArgumentException("Received organization is null");
+            throw createSOAPFaultException("BadRequestException", "Received organization is null", "SOAP-ENV:Client");
         }
-        System.out.println("Received organization: " + organization);
         organization.setId(idGenerator.getAndIncrement());
         organizations.put(organization.getId(), organization);
         return organization;
@@ -53,19 +60,28 @@ public class OrganizationServiceBean implements OrganizationService {
             @WebParam(name = "id", targetNamespace = "http://organization.lab4.soa/") Long id,
             @WebParam(name = "updatedOrganization", targetNamespace = "http://organization.lab4.soa/") Organization updatedOrganization) {
         Organization existingOrg = organizations.get(id);
-        if (existingOrg != null) {
-            updatedOrganization.setId(id);
-            updatedOrganization.setCreationDate(existingOrg.getCreationDate());
-            organizations.put(id, updatedOrganization);
+        if (existingOrg == null) {
+            throw createSOAPFaultException("OrganizationNotFoundException",
+                    "Organization with id " + id + " not found",
+                    "SOAP-ENV:Client");
         }
+        updatedOrganization.setId(id);
+        updatedOrganization.setCreationDate(existingOrg.getCreationDate());
+        organizations.put(id, updatedOrganization);
         return updatedOrganization;
     }
 
     @WebMethod(operationName = "deleteOrganization")
     @WebResult(name = "result")
     public boolean deleteOrganization(@WebParam(name = "id", targetNamespace = "http://organization.lab4.soa/") Long id) {
-        System.out.println(id);
-        return organizations.remove(id) != null;
+        Organization existingOrg = organizations.get(id);
+        if (existingOrg == null) {
+            throw createSOAPFaultException("OrganizationNotFoundException",
+                    "Organization with id " + id + " not found",
+                    "SOAP-ENV:Client");
+        }
+        Organization removedOrg = organizations.remove(id);
+        return true;
     }
 
     @WebMethod(operationName = "getFilteredOrganizations")
@@ -82,7 +98,7 @@ public class OrganizationServiceBean implements OrganizationService {
                 Date filterDate = sdf.parse(creationDate);
                 filteredStream = filteredStream.filter(org -> org.getCreationDate().after(filterDate));
             } catch (Exception e) {
-                throw new IllegalArgumentException("Invalid creationDate format. Expected format: yyyy-MM-dd");
+                throw createSOAPFaultException("BadRequestException", "Invalid creationDate format. Expected format: yyyy-MM-dd", "SOAP-ENV:Client");
             }
         }
 
@@ -101,7 +117,7 @@ public class OrganizationServiceBean implements OrganizationService {
                     filteredStream = filteredStream.sorted(applySortOrder(comparator, ascending));
                 }
             } else {
-                throw new IllegalArgumentException("Invalid sort parameter. Expected format: field,asc|desc");
+                throw createSOAPFaultException("BadRequestException", "Invalid sort parameter. Expected format: field,asc|desc", "SOAP-ENV:Client");
             }
         }
 
@@ -147,5 +163,20 @@ public class OrganizationServiceBean implements OrganizationService {
                 .collect(Collectors.toList());
     }
 
+    private SOAPFaultException createSOAPFaultException(String faultCode, String faultString, String faultSubcode) {
+        try {
+            MessageFactory messageFactory = MessageFactory.newInstance();
+            SOAPMessage soapMessage = messageFactory.createMessage();
+            SOAPBody soapBody = soapMessage.getSOAPBody();
 
+            // Создаем SOAPFault с кодом и сообщением
+            SOAPFault soapFault = soapBody.addFault(new QName("http://organization.lab4.soa/", faultCode), faultString);
+            soapFault.setFaultCode(faultSubcode);
+
+            // Выбрасываем SOAPFaultException с этим SOAPFault
+            return new SOAPFaultException(soapFault);
+        } catch (SOAPException e) {
+            throw new RuntimeException("Error creating SOAPFault", e);
+        }
+    }
 }

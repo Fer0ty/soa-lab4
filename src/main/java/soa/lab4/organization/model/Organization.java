@@ -19,11 +19,11 @@ public class Organization {
     private Date creationDate;
     private Coordinates coordinates;
     private Address officialAddress;
-    private OrganizationType orgType;
+    private String  orgType;
 
     public Organization() {}
 
-    public Organization(Long id, String name, String fullName, Integer annualTurnover, Integer employeesCount, Date creationDate, Coordinates coordinates, Address officialAddress, OrganizationType orgType) {
+    public Organization(Long id, String name, String fullName, Integer annualTurnover, Integer employeesCount, Date creationDate, Coordinates coordinates, Address officialAddress, String  orgType) {
         this.id = id;
         this.name = name;
         this.fullName = fullName;
@@ -109,11 +109,11 @@ public class Organization {
     }
 
     @XmlElement(namespace = "http://organization.lab4.soa/")
-    public OrganizationType getOrgType() {
+    public String  getOrgType() {
         return orgType;
     }
 
-    public void setOrgType(OrganizationType orgType) {
+    public void setOrgType(String  orgType) {
         this.orgType = orgType;
     }
 }

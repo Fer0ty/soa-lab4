@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-      xmlns:http="http://www.mulesoft.org/schema/mule/http"
-      xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule  xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+       xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+       xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
     http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
     http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
-    http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
 
-    <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c48fb43c-d4c0-4ff4-92d0-ea639275e2ee" >
+    <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="5286203b-1b62-4f69-9f1c-f2c8c2c274af" >
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
 
-    <wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="7d02329f-b685-44d4-87e0-229e49e5043f" >
+    <wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="9a7107d9-077c-4041-b729-3ecb79937c5f" >
         <wsc:connection wsdlLocation="organization-service.wsdl" service="OrganizationServiceBeanService" port="OrganizationServiceBeanPort" address="http://localhost:8080/ws/organization" >
             <wsc:web-service-security actor="http://schemas.xmlsoap.org/soap/actor/next" />
         </wsc:connection>
     </wsc:config>
 
-    <flow name="getAll" doc:id="968edd93-685d-4467-a0ea-bb228bb4dbb4" >
-        <http:listener doc:name="Listener" doc:id="163747bb-f9e9-4c6e-b781-12654ebb1a38" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="GET">
+    <flow name="getAll" doc:id="81e7a0c5-7bb8-4e0b-852d-67ae0f7ad288" >
+        <http:listener doc:name="Listener" doc:id="4eba6d20-371e-4d70-a797-680424554009" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="GET">
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
 ---
@@ -29,7 +30,7 @@
 	"Access-Control-Allow-Credentials" : "true"
 }]]]></http:headers>
             </http:response>
-            <http:error-response >
+            <http:error-response statusCode='#[read(error.exception.cause.detail, "application/xml").detail.code]'>
                 <http:body ><![CDATA[#[payload]]]></http:body>
                 <http:headers ><![CDATA[#[output application/java
 ---
@@ -43,7 +44,7 @@
 
         </http:listener>
 
-        <ee:transform doc:name="Transform Message" doc:id="4769dd7a-dbc9-4f0b-a840-1dc3e2b53ade">
+        <ee:transform doc:name="Transform Message" doc:id="fa5d9859-7cee-4c7b-82b3-b6f4154fdafc">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
                 output text/xml skipNullOn="everywhere"
@@ -58,42 +59,40 @@
                 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-
-        <wsc:consume operation="getFilteredOrganizations" doc:name="Consume" doc:id="395ca49b-6a8a-4aa0-a2a2-2f1307719cf2" config-ref="Web_Service_Consumer_Config"/>
+        <wsc:consume operation="getFilteredOrganizations" doc:name="Consume" doc:id="c57c96b7-e33c-413b-b876-5a8b90e11d8a" config-ref="Web_Service_Consumer_Config"/>
 
         <!-- Преобразование XML в JSON -->
-        <ee:transform doc:name="XML to JSON" doc:id="8de540c2-6f76-4954-99b8-432f76a15159">
+        <logger level="INFO" doc:name="Logger" doc:id="820f1062-d888-4db2-820f-4af8a55608e6" message="#[payload]"/>
+        <ee:transform doc:name="XML to JSON" doc:id="758bcc5e-f623-43e6-9f01-bbf1845daf4f">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload.body.getFilteredOrganizationsResponse.*organizations map (org) -> {
-    "id": org.id,
-    "name": org.name,
-    "fullName": org.fullName,
-    "annualTurnover": org.annualTurnover,
-    "employeesCount": org.employeesCount,
-    "coordinates": {
-      "x": org.coordinates.x,
-      "y": org.coordinates.y
+(payload.body.getFilteredOrganizationsResponse.*organizations default []) map (org) -> {
+    id: org.id,
+    name: org.name,
+    fullName: org.fullName,
+    annualTurnover: org.annualTurnover,
+    employeesCount: org.employeesCount,
+    coordinates: {
+        x: org.coordinates.x,
+        y: org.coordinates.y
     },
-    "creationDate": org.creationDate,
-    "officialAddress": {
-      "zipCode": org.officialAddress.zipCode
+    creationDate: org.creationDate,
+    officialAddress: {
+        zipCode: org.officialAddress.zipCode
     },
-    "orgType": org.orgType
-  }
-
+    orgType: org.orgType
+}
 ]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-
     </flow>
 
 
 
-    <flow name="getOrganization" doc:id="47d06da2-d361-405a-bdaa-aabdea8310e0" >
-        <http:listener doc:name="Listener" doc:id="fa7475a9-6b06-4b7c-821f-38f7f145f520" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="GET">
+    <flow name="getOrganization" doc:id="262def8d-f48a-44d4-9108-143a36041115" >
+        <http:listener doc:name="Listener" doc:id="e449dfb7-974c-4387-83cf-32443c0a76ff" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="GET">
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
 ---
@@ -117,7 +116,7 @@ payload.body.getFilteredOrganizationsResponse.*organizations map (org) -> {
             </http:error-response>
 
         </http:listener>
-        <ee:transform doc:name="Transform Message" doc:id="7f4189b8-cc9c-4d68-a8d1-6a30d4c35488" >
+        <ee:transform doc:name="Transform Message" doc:id="7b50d5f3-40d1-44a7-b8f6-1b11057a9782" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
 output text/xml skipNullOn="everywhere"
@@ -130,16 +129,20 @@ ns web http://organization.lab4.soa/
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-        <wsc:consume operation="getOrganization" doc:name="Consume" doc:id="ee34237e-19d5-4336-aba1-e4af32a5ac26" config-ref="Web_Service_Consumer_Config"/>
-        <ee:transform doc:name="Transform Message" doc:id="b60121aa-b018-48af-b5f7-5049c9ff232a" >
+        <wsc:consume operation="getOrganization" doc:name="Consume" doc:id="51d760aa-0da2-4a49-b7eb-c1a347c37588" config-ref="Web_Service_Consumer_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="c4875597-4ddd-4095-afb2-3d5bcf7240b4" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-payload.body.getOrganizationResponse.organization   ]]></ee:set-payload>
+if (payload.body.getOrganizationResponse.organization == null)
+error
+
+else
+payload.body.getOrganizationResponse.organization
+ ]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-
     </flow>
 
 
@@ -152,8 +155,8 @@ payload.body.getOrganizationResponse.organization   ]]></ee:set-payload>
 
 
 
-    <flow name="createOrganization" doc:id="9506d767-930e-416f-abe0-e09007a8b6d5">
-        <http:listener doc:name="Listener" doc:id="99b94089-21f1-4337-bce4-47b73cbbd20f" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="POST">
+    <flow name="createOrganization" doc:id="d7d7bf45-211b-44ac-8786-12824db18649">
+        <http:listener doc:name="Listener" doc:id="8011b190-ce1d-4110-9e05-f59a5c7cefbb" config-ref="HTTP_Listener_config" path="/api/organizations" allowedMethods="POST">
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
 ---
@@ -177,8 +180,8 @@ payload.body.getOrganizationResponse.organization   ]]></ee:set-payload>
             </http:error-response>
 
         </http:listener>
-        <logger level="INFO" doc:name="Logger" doc:id="b0e9abb7-4e2c-4391-b417-fb30f58b318d" message="#[payload]"/>
-        <ee:transform doc:name="Transform Message" doc:id="00eba00d-e585-4943-b94b-8bffdd94586f">
+        <logger level="INFO" doc:name="Logger" doc:id="b78d31be-8dfc-489d-926a-39f842e3967e" message="#[payload]"/>
+        <ee:transform doc:name="Transform Message" doc:id="47ccb6a2-5f9d-4094-912d-cb3e2f8d3ace">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output text/xml skipNullOn="everywhere"
@@ -206,9 +209,9 @@ ns tns http://organization.lab4.soa/
             </ee:message>
         </ee:transform>
 
-        <wsc:consume operation="createOrganization" doc:name="Consume" doc:id="0d41cdc2-6374-446d-b139-61c0012caf6e" config-ref="Web_Service_Consumer_Config"/>
+        <wsc:consume operation="createOrganization" doc:name="Consume" doc:id="85b63355-902c-4825-8a19-7cb38ebe59b8" config-ref="Web_Service_Consumer_Config"/>
 
-        <ee:transform doc:name="Transform Message" doc:id="581c7a78-0c19-4e7b-9745-93572d4a5e39">
+        <ee:transform doc:name="Transform Message" doc:id="b77ae9d3-2587-4096-baa0-1c5d28942a49">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -231,8 +234,8 @@ payload.body.createOrganizationResponse.organization]]></ee:set-payload>
 
 
 
-    <flow name="updateOrganization" doc:id="9219f449-952b-4edb-b71f-a0a06cfb2cbe">
-        <http:listener doc:name="Listener" doc:id="0ae9f1b2-feb4-4a89-afa5-d35ef3d0817c" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="PUT">
+    <flow name="updateOrganization" doc:id="5691a8be-4215-4f9b-ad34-0c87f34ac346">
+        <http:listener doc:name="Listener" doc:id="1aa0bc9c-6d8f-40f4-b7c4-0dc6cb5afc2b" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="PUT">
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
 ---
@@ -257,7 +260,7 @@ payload.body.createOrganizationResponse.organization]]></ee:set-payload>
 
         </http:listener>
 
-        <ee:transform doc:name="Transform Message" doc:id="62e2f337-ab40-45b2-be1b-65740288fc58">
+        <ee:transform doc:name="Transform Message" doc:id="f9cc7595-5bd7-4661-b07a-c48b4f213edc">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output text/xml skipNullOn="everywhere"
@@ -285,8 +288,8 @@ ns tns http://organization.lab4.soa/
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-        <wsc:consume operation="updateOrganization" doc:name="Consume" doc:id="b62f1b7d-c8ec-47b3-b1ec-8700d5c1eb00" config-ref="Web_Service_Consumer_Config"/>
-        <ee:transform doc:name="Transform Message" doc:id="eba65fd1-ae08-49f4-aa9e-b52c89dc73bb">
+        <wsc:consume operation="updateOrganization" doc:name="Consume" doc:id="41d70186-4f0b-44a4-9394-d5bc1fa3e1ad" config-ref="Web_Service_Consumer_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="6e83ca59-c8b2-4e1a-8b4f-73119e4957c4">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 ns ns0 http://organization.lab4.soa/
@@ -305,33 +308,33 @@ payload.body]]></ee:set-payload>
 
 
 
-    <flow name="deleteOrganization" doc:id="1b8d7549-5431-4647-827c-7845a690a528" >
-        <http:listener doc:name="Listener" doc:id="5709bb82-8983-4502-b905-cc7475e05f26" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="DELETE">
-            <http:response >
-                <http:headers ><![CDATA[#[output application/java
+    <flow name="deleteOrganization" doc:id="313f4030-8816-46b8-ae43-45c1a7a8bec6">
+        <http:listener doc:name="Listener" doc:id="eccfe880-2737-4613-9946-7aaf4a84d698" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="DELETE">
+            <http:response>
+                <http:headers><![CDATA[#[output application/java
 ---
 {
-	"Access-Control-Allow-Origin" : "*",
-	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
-	"Access-Control-Allow-Headers" : "*",
-	"Access-Control-Allow-Credentials" : "true"
+    "Access-Control-Allow-Origin" : "*",
+    "Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+    "Access-Control-Allow-Headers" : "*",
+    "Access-Control-Allow-Credentials" : "true"
 }]]]></http:headers>
             </http:response>
-            <http:error-response >
-                <http:body ><![CDATA[#[payload]]]></http:body>
-                <http:headers ><![CDATA[#[output application/java
+            <http:error-response>
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[output application/java
 ---
 {
-	"Access-Control-Allow-Origin" : "*",
-	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
-	"Access-Control-Allow-Headers" : "*",
-	"Access-Control-Allow-Credentials" : "true"
+    "Access-Control-Allow-Origin" : "*",
+    "Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+    "Access-Control-Allow-Headers" : "*",
+    "Access-Control-Allow-Credentials" : "true"
 }]]]></http:headers>
             </http:error-response>
         </http:listener>
-        <ee:transform doc:name="Transform Message" doc:id="7b37c409-091a-499e-8577-a519497374ad" >
-            <ee:message >
-                <ee:set-payload ><![CDATA[%dw 2.0
+        <ee:transform doc:name="Transform Message" doc:id="caf78f53-9e7c-4704-b2e2-41f0df6a42d4">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output text/xml skipNullOn="everywhere"
 ns org http://organization.lab4.soa/
 ---
@@ -343,22 +346,20 @@ ns org http://organization.lab4.soa/
 ]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-        <wsc:consume operation="deleteOrganization" doc:name="Consume" doc:id="429d4d47-6b86-479b-b099-37ec8129fb41" config-ref="Web_Service_Consumer_Config"/>
-        <ee:transform doc:name="Transform Message" doc:id="d05cbf61-9d85-4723-94d0-8e00f3d8da54" >
-            <ee:message >
-                <ee:set-payload ><![CDATA[%dw 2.0
-ns ns0 http://organization.lab4.soa/
-output application/json
----
-payload.body.deleteOrganizationResponse.result
-]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+        <wsc:consume operation="deleteOrganization" doc:name="Consume" doc:id="80e04c4c-d182-4ead-8111-67f6cf10f8f0" config-ref="Web_Service_Consumer_Config" />
     </flow>
 
 
-    <flow name="countByEmployeesCount" doc:id="a1cbd04f-17b1-4ef2-8d9b-094ccfa1d310" >
-        <http:listener doc:name="Listener" doc:id="1319c469-0474-4d5b-931b-ca7e42aa406e" config-ref="HTTP_Listener_config" path="/api/organizations/count-by-employees" allowedMethods="GET">
+
+
+
+
+
+
+
+
+    <flow name="countByEmployeesCount" doc:id="150bea97-faf7-4b18-a662-9380705dff96" >
+        <http:listener doc:name="Listener" doc:id="a99a0bbe-561c-418c-879b-b162d9ab7e45" config-ref="HTTP_Listener_config" path="/api/organizations/count-by-employees" allowedMethods="GET">
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
 ---
@@ -382,7 +383,7 @@ payload.body.deleteOrganizationResponse.result
             </http:error-response>
 
         </http:listener>
-        <ee:transform doc:name="Transform Message" doc:id="ddcd0594-37ae-4dfd-a0ce-c74a93ad0a80" >
+        <ee:transform doc:name="Transform Message" doc:id="2b0cc2af-7e7e-4b57-998f-ba3c261a5969" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
 output text/xml skipNullOn="everywhere"
@@ -390,19 +391,22 @@ ns org http://organization.lab4.soa/
 ---
 {
     org#countByEmployeesCount: {
-        org#count: payload.count
+        org#count: attributes.queryParams.count as String
+
     }
 }
 ]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-        <wsc:consume doc:name="Consume" doc:id="e5a31761-3063-425d-a784-87845c1dc741" config-ref="Web_Service_Consumer_Config" operation="countByEmployeesCount"/>
-        <ee:transform doc:name="Transform Message" doc:id="90b78ce7-9dfe-4ba1-a7f3-f07f0c69b1e9" >
+        <wsc:consume doc:name="Consume" doc:id="fa0e33c4-7543-4663-917c-1773dce14f2b" config-ref="Web_Service_Consumer_Config" operation="countByEmployeesCount"/>
+        <ee:transform doc:name="Transform Message" doc:id="f40006ca-dde2-4cc4-a379-3eb7e5a76172" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-payload.body.countByEmployeesCountResponse.count]]></ee:set-payload>
+{
+"count": payload.body.countByEmployeesCountResponse.count as Number
+}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
@@ -419,17 +423,18 @@ payload.body.countByEmployeesCountResponse.count]]></ee:set-payload>
 
 
 
-    <flow name="searchByFullName" doc:id="9fd3b2b3-5b1a-4d55-9b6a-8a4f33a91814" >
-        <http:listener doc:name="Listener" doc:id="259bb85d-b478-486e-95c5-2fa49b09e11c" config-ref="HTTP_Listener_config" path="/api/organizations/search-by-fullname" allowedMethods="GET">
+    <flow name="searchByFullName" doc:id="924816e0-8338-4d1a-bc8e-728aa9e37ab4" >
+        <http:listener doc:name="Listener" doc:id="a86178d3-7d11-40e0-a859-78d83b7c5273" config-ref="HTTP_Listener_config" path="/api/organizations/search-by-fullname" allowedMethods="GET">
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
 ---
 {
 	"Access-Control-Allow-Origin" : "*",
-	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Methods" : "*",
 	"Access-Control-Allow-Headers" : "*",
 	"Access-Control-Allow-Credentials" : "true"
 }]]]></http:headers>
+
             </http:response>
             <http:error-response >
                 <http:body ><![CDATA[#[payload]]]></http:body>
@@ -444,43 +449,26 @@ payload.body.countByEmployeesCountResponse.count]]></ee:set-payload>
             </http:error-response>
 
         </http:listener>
-        <ee:transform doc:name="Transform Message" doc:id="31c50d86-5e73-437e-a5ec-4ad2a6c7d366" >
-            <ee:message >
-                <ee:set-payload ><![CDATA[%dw 2.0
+        <ee:transform doc:name="Transform Message" doc:id="00b5194c-a490-4487-ba9d-6e5d922fd1c3">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output text/xml skipNullOn="everywhere"
 ns org http://organization.lab4.soa/
 ---
 {
     org#searchByFullName: {
-        org#substring: payload.substring
-    }
+        org#substring: attributes.queryParams.substring    }
 }
 ]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-        <wsc:consume operation="searchByFullName" doc:name="Consume" doc:id="fd59b980-3a6f-474e-9224-0c3dee76d4ef" config-ref="Web_Service_Consumer_Config"/>
-        <ee:transform doc:name="Transform Message" doc:id="8ad13ecd-6e9c-4042-aa76-9a7045de57d8" >
+        <wsc:consume operation="searchByFullName" doc:name="Consume" doc:id="b2f251de-84e0-4c1a-ad21-d7d246976124" config-ref="Web_Service_Consumer_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="1d062538-8954-4fff-8b43-9d0e2089c063" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-	payload.body.searchByFullNameResponse.*organizations map (org) -> {
-    "id": org.id,
-    "name": org.name,
-    "fullName": org.fullName,
-    "annualTurnover": org.annualTurnover,
-    "employeesCount": org.employeesCount,
-    "coordinates": {
-      "x": org.coordinates.x,
-      "y": org.coordinates.y
-    },
-    "creationDate": org.creationDate,
-    "officialAddress": {
-      "zipCode": org.officialAddress.zipCode
-    },
-    "orgType": org.orgType
-}
-]]></ee:set-payload>
+	payload.body.searchByFullNameResponse.*organizations default []]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
@@ -494,9 +482,20 @@ output application/json
 
 
 
-    <flow name="soa4Flow" doc:id="f907d329-2f67-4928-a3bb-fe7171043294" >
-        <http:listener doc:name="Listener" doc:id="9d9769ec-f027-436a-a8b9-bd84fa24fdec" config-ref="HTTP_Listener_config" path="/api/organizations/group-by-address" allowedMethods="GET"/>
-        <ee:transform doc:name="Transform Message" doc:id="1de8b8ff-1e04-480a-a35d-032aa3ecaba4" >
+    <flow name="groupByAddress" doc:id="b483ed9a-f511-4805-96a7-fde09857c89f" >
+        <http:listener doc:name="Listener" doc:id="acc9624a-a24d-4b4c-8300-9d0f06f9cabd" config-ref="HTTP_Listener_config" path="/api/organizations/group-by-address" allowedMethods="GET">
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "*",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:response>
+        </http:listener>
+        <ee:transform doc:name="Transform Message" doc:id="b7177309-fb40-400e-ac47-85d47c58b3ac" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
 output text/xml skipNullOn="everywhere"
@@ -507,21 +506,29 @@ ns org http://organization.lab4.soa/
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-        <wsc:consume operation="groupByAddress" doc:name="Consume" doc:id="62ae1012-87ad-433e-9c4c-8f09c3be8e62" config-ref="Web_Service_Consumer_Config"/>
-        <ee:transform doc:name="Transform Message" doc:id="bfff4059-97d9-4510-a65c-d3c1b8d49917" >
+        <logger level="INFO" doc:name="Logger" doc:id="53235a09-bc59-42ed-8801-19586f12491c" message="#[payload]" />
+        <wsc:consume operation="groupByAddress" doc:name="Consume" doc:id="5d8de438-603b-461f-93c5-35d2d182a2a7" config-ref="Web_Service_Consumer_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="56beae60-25e7-4a28-85fe-45539b6a8930" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-payload.body.groupByAddressResponse.*officialAddressGroup
-    reduce ((item, acc = {}) ->
-        acc ++ {(item.address.zipCode): item.count})
+
+(payload.body.groupByAddressResponse.*officialAddressGroup default []) map(item) ->
+{
+
+	"officialAddress":{
+		"zipCode": item.address.zipCode
+	},
+	"count": item.count
+}
+
 ]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
-    <flow name="organizationsOptions" doc:id="e4ade84b-28dd-474c-a645-a8560928c9e7" >
-        <http:listener doc:name="Listener" doc:id="9b53b643-99ac-4726-8f35-bfd39fe8c56a" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="OPTIONS" >
+    <flow name="organizationsOptions" doc:id="9811864a-da89-496c-bd62-5f14150d7bd3" >
+        <http:listener doc:name="Listener" doc:id="40de6264-a31c-4594-a050-5ed9126ea201" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="OPTIONS" >
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
 ---
@@ -536,10 +543,10 @@ payload.body.groupByAddressResponse.*officialAddressGroup
                 <http:body ><![CDATA[#[payload]]]></http:body>
             </http:error-response>
         </http:listener>
-        <logger level="INFO" doc:name="Logger" doc:id="37a80a06-ec10-49c8-a82e-8dd1025cf786" />
+        <logger level="INFO" doc:name="Logger" doc:id="43f0e6c6-c27b-4d44-8d63-20191552fd61" />
     </flow>
-    <flow name="organizationsOptions1" doc:id="94266670-ab29-45a9-841c-f182c4f0cf1e" >
-        <http:listener doc:name="Listener" doc:id="6ab8fed3-28fb-429c-80a9-aed2a0b89df1" config-ref="HTTP_Listener_config" path="/api/organizations/" allowedMethods="OPTIONS" >
+    <flow name="organizationsOptions1" doc:id="c615be53-f297-470e-b20e-ce01caf7e5fb" >
+        <http:listener doc:name="Listener" doc:id="f91ce8c9-61bd-40ae-b9f5-1ff7a2c7472e" config-ref="HTTP_Listener_config" path="/api/organizations/" allowedMethods="OPTIONS" >
             <http:response >
                 <http:headers ><![CDATA[#[output application/java
 ---
@@ -554,7 +561,43 @@ payload.body.groupByAddressResponse.*officialAddressGroup
                 <http:body ><![CDATA[#[payload]]]></http:body>
             </http:error-response>
         </http:listener>
-        <logger level="INFO" doc:name="Logger" doc:id="4898c81b-fdfd-49fe-a5e0-a4306370b8fd" />
+        <logger level="INFO" doc:name="Logger" doc:id="c6a56641-b35a-458b-bedd-870a99f0f002" />
+    </flow>
+    <flow name="organizationsOptions2" doc:id="85ca1f7c-fa4f-4b72-ab47-cad869fdd2cc" >
+        <http:listener doc:name="Listener" doc:id="6b6279b8-54a6-4894-a816-fa93fb677e92" config-ref="HTTP_Listener_config" path="/api/organizations/count-by-employees" allowedMethods="OPTIONS" >
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "*",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+            </http:error-response>
+        </http:listener>
+        <logger level="INFO" doc:name="Logger" doc:id="99028d2a-a08c-4174-be2e-8e3a0387537f" />
+    </flow>
+    <flow name="organizationsOptions4" doc:id="3a0590f9-d4d8-4076-81fa-ad74a5f27f61" >
+        <http:listener doc:name="Listener" doc:id="1bb7de2e-b752-48cf-8a08-0fbc6dc89256" config-ref="HTTP_Listener_config" path="/api/organizations/search-by-fullname" allowedMethods="OPTIONS" >
+            <http:response >
+                <http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "*",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response >
+                <http:body ><![CDATA[#[payload]]]></http:body>
+            </http:error-response>
+        </http:listener>
+        <logger level="INFO" doc:name="Logger" doc:id="08d153e6-6c6e-4667-b6d7-c76d27a3acf4" />
     </flow>
 
 

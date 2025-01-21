@@ -91,61 +91,51 @@ output application/json
 
 
 
-    <flow name="getOrganization" doc:id="262def8d-f48a-44d4-9108-143a36041115" >
-        <http:listener doc:name="Listener" doc:id="e449dfb7-974c-4387-83cf-32443c0a76ff" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="GET">
-            <http:response >
-                <http:headers ><![CDATA[#[output application/java
----
-{
-	"Access-Control-Allow-Origin" : "*",
-	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
-	"Access-Control-Allow-Headers" : "*",
-	"Access-Control-Allow-Credentials" : "true"
-}]]]></http:headers>
+    <flow name="getOrganization" doc:id="315abf97-24ec-4705-8a5a-6c80d83043fb">
+        <http:listener doc:name="Listener" doc:id="9f9a4bd2-c05f-4bc6-8a29-e1ce9d1182c3" config-ref="HTTP_Listener_config" path="/api/organizations/{id}" allowedMethods="GET">
+            <http:response>
+                <http:headers>
+                    <![CDATA[#[output application/java
+                ---
+                {
+                    "Access-Control-Allow-Origin" : "*",
+                    "Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+                    "Access-Control-Allow-Headers" : "*",
+                    "Access-Control-Allow-Credentials" : "true"
+                }]]]>
+                </http:headers>
             </http:response>
-            <http:error-response >
-                <http:body ><![CDATA[#[payload]]]></http:body>
-                <http:headers ><![CDATA[#[output application/java
----
-{
-	"Access-Control-Allow-Origin" : "*",
-	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
-	"Access-Control-Allow-Headers" : "*",
-	"Access-Control-Allow-Credentials" : "true"
-}]]]></http:headers>
-            </http:error-response>
-
         </http:listener>
-        <ee:transform doc:name="Transform Message" doc:id="7b50d5f3-40d1-44a7-b8f6-1b11057a9782" >
-            <ee:message >
-                <ee:set-payload ><![CDATA[%dw 2.0
-output text/xml skipNullOn="everywhere"
-ns web http://organization.lab4.soa/
----
-{
-	web#getOrganization: {
-		web#id: attributes.uriParams.id
-	}
-}]]></ee:set-payload>
+
+        <ee:transform doc:name="Transform Message" doc:id="ac20af57-c352-4559-8f0f-99c3c9fcd51f">
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+                output text/xml skipNullOn="everywhere"
+                ns web http://organization.lab4.soa/
+                ---
+                {
+                    web#getOrganization: {
+                        web#id: attributes.uriParams.id
+                    }
+                }]]>
+                </ee:set-payload>
             </ee:message>
         </ee:transform>
-        <wsc:consume operation="getOrganization" doc:name="Consume" doc:id="51d760aa-0da2-4a49-b7eb-c1a347c37588" config-ref="Web_Service_Consumer_Config"/>
-        <ee:transform doc:name="Transform Message" doc:id="c4875597-4ddd-4095-afb2-3d5bcf7240b4" >
-            <ee:message >
-                <ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-if (payload.body.getOrganizationResponse.organization == null)
-error
 
-else
-payload.body.getOrganizationResponse.organization
- ]]></ee:set-payload>
+        <wsc:consume operation="getOrganization" doc:name="Consume" doc:id="e2e60f7d-8158-4f43-9db0-59b621bb9793" config-ref="Web_Service_Consumer_Config"/>
+
+        <ee:transform doc:name="Transform Message" doc:id="afc31c2b-4768-4e48-9cc2-85795dec9a9e">
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+                output application/json
+                ---
+                payload.body.getOrganizationResponse.organization]]>
+                </ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
-
-
 
 
 
@@ -247,7 +237,9 @@ payload.body.createOrganizationResponse.organization]]></ee:set-payload>
 }]]]></http:headers>
             </http:response>
             <http:error-response >
-                <http:body ><![CDATA[#[payload]]]></http:body>
+                <http:body ><![CDATA[#[output text/plain
+---
+error.description]]]></http:body>
                 <http:headers ><![CDATA[#[output application/java
 ---
 {
@@ -295,9 +287,14 @@ ns tns http://organization.lab4.soa/
 ns ns0 http://organization.lab4.soa/
 output application/json
 ---
-payload.body]]></ee:set-payload>
+payload.body.updateOrganizationResponse.organization]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+        <error-handler >
+            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d6a1c2da-daf5-4d43-be52-4c422e929046">
+                <logger level="INFO" doc:name="Logger" doc:id="89e6dc4f-4d3d-4a59-bf51-2506da3854c7" message="ERROR ERROR ERROR"/>
+            </on-error-propagate>
+        </error-handler>
     </flow>
 
 
@@ -321,7 +318,9 @@ payload.body]]></ee:set-payload>
 }]]]></http:headers>
             </http:response>
             <http:error-response>
-                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:body><![CDATA[#[output text/plain
+---
+error.description]]]></http:body>
                 <http:headers><![CDATA[#[output application/java
 ---
 {
@@ -347,6 +346,15 @@ ns org http://organization.lab4.soa/
             </ee:message>
         </ee:transform>
         <wsc:consume operation="deleteOrganization" doc:name="Consume" doc:id="80e04c4c-d182-4ead-8111-67f6cf10f8f0" config-ref="Web_Service_Consumer_Config" />
+        <ee:transform doc:name="Transform Message" doc:id="f71acb66-6e66-47c2-b061-9143c87adf39" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://organization.lab4.soa/
+output application/json
+---
+payload.body.deleteOrganizationResponse.result]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
     </flow>
 
 
@@ -371,7 +379,9 @@ ns org http://organization.lab4.soa/
 }]]]></http:headers>
             </http:response>
             <http:error-response >
-                <http:body ><![CDATA[#[payload]]]></http:body>
+                <http:body ><![CDATA[#[output text/plain
+---
+error.description]]]></http:body>
                 <http:headers ><![CDATA[#[output application/java
 ---
 {
@@ -399,14 +409,14 @@ ns org http://organization.lab4.soa/
             </ee:message>
         </ee:transform>
         <wsc:consume doc:name="Consume" doc:id="fa0e33c4-7543-4663-917c-1773dce14f2b" config-ref="Web_Service_Consumer_Config" operation="countByEmployeesCount"/>
+        <logger level="INFO" doc:name="Logger" doc:id="d12b60f0-8fc9-4d3b-a1ac-702e27b7b58b" message="#[payload]"/>
         <ee:transform doc:name="Transform Message" doc:id="f40006ca-dde2-4cc4-a379-3eb7e5a76172" >
             <ee:message >
                 <ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://organization.lab4.soa/
 output application/json
 ---
-{
-"count": payload.body.countByEmployeesCountResponse.count as Number
-}]]></ee:set-payload>
+payload.body.countByEmployeesCountResponse]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
@@ -599,7 +609,6 @@ output application/json
         </http:listener>
         <logger level="INFO" doc:name="Logger" doc:id="08d153e6-6c6e-4667-b6d7-c76d27a3acf4" />
     </flow>
-
 
 
 
